@@ -19,18 +19,19 @@ class Event extends Model
         'image'
     ];
 
-    public static function filterEvent($type){
-        if($type == 'FINISHED'){
+    public static function filterEvent($filter){
+        if($filter === 'FINISHED'){
             return parent::where('end_date', '<', now());
         }
-        if($type == 'UPCOMING'){
+        if($filter === 'UPCOMING'){
             return parent::where('start_date', '>', now());
         }
-        if($type == 'UPCOMING7'){
+        if($filter === 'UPCOMING7'){
             return parent::whereBetween('start_date', [now(), now()->addDays(7)]);
         }
-        if($type == 'FINISHED7'){
+        if($filter === 'FINISHED7'){
             return parent::whereBetween('end_date', [now()->subDays(7), now()]);
         }
+        return self::query();
     }
 }

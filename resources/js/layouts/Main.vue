@@ -1,6 +1,9 @@
 <template>
-  <div class="w-full flex items-center justify-center mx-2 my-4 px-2 py-4">
-    <router-view/>
+  <div>
+    <Topbar/>
+    <div class="mt-16 xl:mt-20 mb-6">
+      <router-view/>
+    </div>
   </div>
 </template>
 
