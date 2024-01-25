@@ -4,15 +4,16 @@
 
 @layer components {
     input {
+        --tw-bg-opacity: 1;
         accent-color: rgb(96 165 250 / var(--tw-bg-opacity));
     }
 
-    ::-moz-selection {
-        /* Code for Firefox */
+    ::selection {
         @apply bg-primary-500 text-white;
     }
 
-    ::selection {
+    /*For Firefox */
+    ::-moz-selection {
         @apply bg-primary-500 text-white;
     }
 
@@ -22,42 +23,28 @@
         }
     }
 
-    .upload-btn{
-        @apply flex items-center
-        gap-2 px-4 py-2
-        text-base font-bold text-center text-white
-        transition-all
-        rounded-lg cursor-pointer
-        bg-primary-500 hover:bg-primary-600
-    }
+    /* Form */
     select.filter-dropdown {
-        @apply w-32 h-full
-        block appearance-none
-        pl-2 pr-8
-        px-3 py-2
-        text-sm leading-tight
-        text-black bg-white
-        border border-gray-400
-        focus:outline-none
-        hover:shadow-sm focus:ring-2
-        focus:ring-primary-500
+        @apply w-44 h-11 block appearance-none pl-2 pr-8
+        px-3 py-2 m-[2px] text-sm leading-tight
+        text-black bg-white cursor-pointer
+        hover:shadow-sm
+        hover:bg-gray-100
+        border-none focus:outline-none
         focus:border-none
-        font-medium
-        cursor-pointer
         rounded-lg
     }
 
     input.search {
-        @apply w-32
+        @apply w-48 h-11
         block bg-white
         p-2 pl-10 text-sm text-gray-900
+        border border-gray-400
         focus-visible:outline
         focus-visible:outline-1
         focus-visible:outline-primary-500
         focus-visible:border-primary-500
-        border border-gray-400
         rounded-lg
-
     }
 
     .form-input {
@@ -87,9 +74,18 @@
         mx-1 px-5 py-2.5
     }
 
+    .upload-btn {
+        @apply flex items-center
+        gap-2 px-4 py-2
+        text-base font-bold text-center text-white
+        transition-all
+        rounded-lg cursor-pointer
+        bg-primary-500 hover:bg-primary-600
+    }
+
     /* Table */
     .table-body .table-cell {
-        @apply align-top;
+        @apply align-middle;
     }
 
     .table-head .table-cell {

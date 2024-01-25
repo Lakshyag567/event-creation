@@ -15,11 +15,24 @@ class EventController extends Controller
      *
      * @return ApiResource
      */
-    public function index()
+    public function index(): ApiResource
     {
-        $filter = request()->filter; //query parameter
-        $events = Event::filterEvent($filter)->orderBy('start_date')->get();
+        //query parameter
+        $filter = request()->filter;
+        $keyword = request()->keyword;
 
+        //query builder
+        $events = Event::filterEvent($filter)
+            ->when(isset($keyword), function ($query) use($keyword){
+                $query->where(function ($query) use($keyword) {
+                    $query->orWhere('title','LIKE','%'.$keyword.'%')
+                        ->orWhere('description','LIKE','%'.$keyword.'%');
+                });
+            })
+            ->orderBy('start_date')
+            ->get();
+
+        //return events
         return new ApiResource($events);
     }
 
@@ -30,8 +43,9 @@ class EventController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return ApiResource
      */
-    public function store(Request $request)
+    public function store(Request $request): ApiResource
     {
+        //Validating the Request
         $request->validate([
             'title' => 'required',
             'description' => 'required',
@@ -40,35 +54,37 @@ class EventController extends Controller
             'image' => 'required|image|max:2048',
         ]);
 
+        //Handle file uploading
+        $imageFile = $request->file('image');
+        $uploadedPath = FileHandler::upload($imageFile, 'event_images');
+
+        if (!$uploadedPath) {
+            //File couldn't upload
+            return new ApiResource(['status' => 'error', 'msg' => 'Something went wrong!']);
+        }
+
+        //New Event creation
         $event = Event::create([
             'title' => $request->title,
             'description' => $request->description,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'image' => $uploadedPath
         ]);
-        //event created successfully
 
-        if ($request->hasFile('image')) {
-            //If request contains file
-            $imageFile = $request->file('image');
-            $uploadedPath = FileHandler::upload($imageFile, 'event_images');
-            if ($uploadedPath) {
-                //file moved and saving to db
-                $event->update('image', $uploadedPath);
-            }
-        }
-
+        //Event created successfully :)
         return new ApiResource(['status' => 'success', 'msg' => $event->title . ' added successfully']);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param Event $event
+     * @param $id
      * @return ApiResource
      */
-    public function show(Event $event)
+    public function show($id): ApiResource
     {
+        $event = Event::findOrFail($id);
         return new ApiResource($event);
     }
 
@@ -76,46 +92,45 @@ class EventController extends Controller
      * Update the specified resource in storage.
      *
      * @param Request $request
-     * @param Event $event
+     * @param $id
      * @return ApiResource
      */
-    public function update(Request $request, Event $event): ApiResource
+    public function update(Request $request, $id): ApiResource
     {
         $request->validate([
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $event = Event::findOrFail($id)->update([
-            $request->except('image')
-        ]);
+        $event = Event::findOrFail($id);
+        $event->update($request->except('image'));
 
         if ($request->hasFile('image')) {
             //If request contains file
             $imageFile = $request->file('image');
             $uploadedPath = FileHandler::upload($imageFile, 'event_images');
-            if ($uploadedPath) {
-                /*file moved successfully */
 
+            /*File moved successfully */
+            if ($uploadedPath) {
                 //deleting existing old file
                 FileHandler::delete($event->image);
                 //replace new path with old one
-                $event->update('image', $uploadedPath);
+                $event->update(['image' => $uploadedPath]);
             }
         }
-
         return new ApiResource(['status' => 'success', 'msg' => $event->title . ' updated successfully']);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param Event $event
+     * @param $id
      * @return ApiResource
      */
-    public function destroy(Event $event)
+    public function destroy($id): ApiResource
     {
-        $event->update('deleted_at', now());
-
+        $event = Event::findOrFail($id);
+        $event->deleted_at = now();
+        $event->save();
         return new ApiResource(['status' => 'success', 'msg' => $event->title . ' deleted successfully']);
     }
 }

@@ -25,7 +25,7 @@ export const DateMixin = {
 
             return hour + ':' + min;
         },
-        formDateTime(str) {
+        formatDateTime(str) {
             const date = this.formatDate(str);
             const time = this.formatTime(str);
 
