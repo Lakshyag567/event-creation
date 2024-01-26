@@ -21,16 +21,16 @@ class Event extends Model
 
     public static function filterEvent($filter){
         if($filter === 'FINISHED'){
-            return parent::where('end_date', '<', now());
+            return self::where('end_date', '<', now());
         }
         if($filter === 'UPCOMING'){
-            return parent::where('start_date', '>', now());
+            return self::where('start_date', '>', now());
         }
         if($filter === 'UPCOMING7'){
-            return parent::whereBetween('start_date', [now(), now()->addDays(7)]);
+            return self::whereBetween('start_date', [now(), now()->addDays(7)]);
         }
         if($filter === 'FINISHED7'){
-            return parent::whereBetween('end_date', [now()->subDays(7), now()]);
+            return self::whereBetween('end_date', [now()->subDays(7), now()]);
         }
         return self::query();
     }

@@ -25,7 +25,7 @@
 
     /* Form */
     select.filter-dropdown {
-        @apply w-44 h-11 block appearance-none pl-2 pr-8
+        @apply w-28 md:w-44 h-8 block appearance-none pl-2 pr-8
         px-3 py-2 m-[2px] text-sm leading-tight
         text-black bg-white cursor-pointer
         hover:shadow-sm
@@ -36,7 +36,7 @@
     }
 
     input.search {
-        @apply w-48 h-11
+        @apply w-40 md:w-44 h-11
         block bg-white
         p-2 pl-10 text-sm text-gray-900
         border border-gray-400

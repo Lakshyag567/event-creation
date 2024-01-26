@@ -1,4 +1,4 @@
-export const DateMixin = {
+const DateMixin = {
     data() {
         return {
             monthNames: ["January", "February", "March", "April", "May", "June",
@@ -33,3 +33,5 @@ export const DateMixin = {
         },
     }
 };
+
+export default DateMixin;

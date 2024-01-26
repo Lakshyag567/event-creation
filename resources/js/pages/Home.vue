@@ -15,15 +15,15 @@
 
         <div class="bg-white p-4 overflow-x-auto shadow-md rounded-lg my-2">
             <div class="block">
-                <form @submit.prevent="editOrCreateEvent()">
+                <form @submit.prevent="createOrEditEvent()">
                     <div class="flex flex-col md:flex-row gap-4 my-2 py-1">
                         <div class="md:w-1/2 w-full">
                             <label for="title" class="block mb-2 text-sm font-bold text-gray-900">Title <span class="text-red-600">*</span></label>
                             <input type="text" v-model="title" id="title" class="form-input" placeholder="AI Workshop" required>
                         </div>
                         <div class="md:w-1/2 w-full">
-                            <label for="image" class="block mb-2 text-sm font-bold text-gray-900">Image <span class="text-red-600">*</span></label>
-                            <input type="file" @change="handleImage($event)" id="image" class="form-input" accept="image/*" required>
+                            <label for="image" class="block mb-2 text-sm font-bold text-gray-900">Image <span class="text-red-600" v-if="!editId">*</span></label>
+                            <input type="file" @change="handleImage($event)" id="image" class="form-input" accept="image/*" :required="!editId">
                         </div>
                     </div>
                     <div class="flex flex-col md:flex-row gap-4 my-2 py-1">
@@ -54,34 +54,32 @@
             </div>
         </div>
 
-        <div class="bg-white p-4 overflow-x-auto shadow-md rounded-lg my-2">
+        <div class="bg-white p-4 overflow-x-auto shadow-md rounded-lg my-4">
             <div class="block">
-                <div class="flex flex-wrap items-center justify-end py-4">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-2 cursor-pointer" v-if="keyword" @click="keyword = ''; fetchEvent();">
-                                <unicon name="times" class=""></unicon>
-                            </div>
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none" v-else>
-                                <unicon name="search" class=""></unicon>
-                            </div>
-                            <input type="text" v-model="keyword" title="Search" class="search" placeholder="Search" @keydown.enter="fetchEvent()">
+                <div class="flex flex-wrap justify-between items-center gap-2 py-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2 cursor-pointer" v-if="keyword" @click="keyword = ''; fetchEvent();">
+                            <unicon name="times" class=""></unicon>
                         </div>
-                        <div class="flex border border-gray-600 rounded-lg bg-white">
-                            <button class="px-2 py-1 m-[2px] hover:bg-primary-100 border-r border-solid cursor-pointer" @click="fetchEvent()">
-                                <unicon name="sync" class=""></unicon>
-                            </button>
-                            <div class="relative">
-                                <select title="Filter" v-model="filter" @change="fetchEvent()" class="filter-dropdown">
-                                    <option class="bg-gray-100" value="">All Events</option>
-                                    <option class="bg-gray-100" value="FINISHED">Finished Events</option>
-                                    <option class="bg-gray-100" value="UPCOMING">Upcoming Events</option>
-                                    <option class="bg-gray-100" value="UPCOMING7">Upcoming in 7 days</option>
-                                    <option class="bg-gray-100" value="FINISHED7">Finished in last 7 days</option>
-                                </select>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <unicon name="angle-down" class=""></unicon>
-                                </div>
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none" v-else>
+                            <unicon name="search" class=""></unicon>
+                        </div>
+                        <input type="text" v-model="keyword" title="Search" class="search" placeholder="Search" @keydown.enter="fetchEvent()">
+                    </div>
+                    <div class="flex border border-gray-600 rounded-lg bg-white">
+                        <button class="px-2 py-1 m-[2px] hover:bg-gray-100 border-r border-solid cursor-pointer" @click="fetchEvent()">
+                            <unicon name="sync" class=""></unicon>
+                        </button>
+                        <div class="relative flex items-center">
+                            <select title="Filter" v-model="filter" @change="fetchEvent()" class="filter-dropdown">
+                                <option class="bg-gray-100" value="">All Events</option>
+                                <option class="bg-gray-100" value="FINISHED">Finished Events</option>
+                                <option class="bg-gray-100" value="UPCOMING">Upcoming Events</option>
+                                <option class="bg-gray-100" value="UPCOMING7">Upcoming in 7 days</option>
+                                <option class="bg-gray-100" value="FINISHED7">Finished in last 7 days</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <unicon name="angle-down" class=""></unicon>
                             </div>
                         </div>
                     </div>
@@ -94,13 +92,13 @@
                         <div class="table border-solid border border-gray-500 w-full">
                             <div class="table-row table-head">
                                 <div class="table-cell border-gray-500 text-center font-semibold uppercase w-10 p-1">S.No.</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Image</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Title</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Description</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Start Date</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">End Date</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Creation On</div>
-                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1">Actions</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-24">Image</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-24">Title</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-36">Description</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-28">Start Date</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-24">End Date</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-32">Creation On</div>
+                                <div class="table-cell border-l border-gray-500 text-center uppercase font-semibold p-1 min-w-24">Actions</div>
                             </div>
                             <div v-for="(event, index) in events" v-bind:key="event.id" class="table-row table-body hover:bg-primary-100" :class="{ 'bg-primary-200': event.id === editId }">
                                 <div class="table-cell border-t border-gray-500 text-sm text-center w-10 p-1">
@@ -153,12 +151,12 @@
 
 <script setup>
     import {ref, defineComponent, onMounted} from 'vue';
-    import axios from "axios";
+    import {useToast} from 'vue-toast-notification';
 
     const storage_url = window.location.origin + "/storage/"
     const loading = ref(true);
     const editId = ref('');
-    const events = ref([{}]);
+    const events = ref([]);
     //form-fields
     const title = ref('');
     const description = ref('');
@@ -171,6 +169,8 @@
     //Image modal
     const showModal = ref(false);
     const imgModal = ref('');
+    //Toast
+    const toast = useToast();
 
     /* Methods */
     const openImageModal = (img) => {
@@ -193,58 +193,18 @@
         }
     }
     const clear = () => {
+        editId.value = '';
         title.value = '';
         description.value = '';
         start_date.value = '';
         end_date.value = '';
-        editId.value = '';
+        image.value = '';
         document.getElementById('image').value = ''
     }
 
-    const fetchEvent = () => {
-        loading.value = true;
-        axios.get('api/event', {
-            params: {
-                filter: filter.value,
-                keyword: keyword.value,
-            }
-        })
-            .then(res => {
-                loading.value = false;
-                events.value = res.data.data || [];
-            })
-            .catch(err => {
-                loading.value = false;
-                err.handleGlobally && err.handleGlobally();
-            })
-    }
-    const editEvent = (id) => {
-        axios
-            .get('api/event/' + id)
-            .then(res => {
-                editId.value = res.data.data.id;
-                title.value = res.data.data.title;
-                description.value = res.data.data.description;
-                start_date.value = res.data.data.start_date;
-                end_date.value = res.data.data.end_date;
-            })
-            .catch(err => {
-                err.handleGlobally && err.handleGlobally();
-            })
-    }
-    const deleteEvent = (id) => {
-        axios.delete('api/event/' + id)
-            .then(res => {
-                //show_toast(res.data.status, res.data.msg);
-                fetchEvent();
-            })
-            .catch(err => {
-                err.handleGlobally && err.handleGlobally();
-                fetchEvent();
-            })
-    }
-    const editOrCreateEvent = () => {
-        let url = 'api/event';
+
+    const createOrEditEvent = () => {
+        let url = 'event';
         let formData = new FormData();
         //Basic fields
         formData.append('title', title.value);
@@ -264,9 +224,55 @@
         }
         axios.post(url, formData)
             .then(res => {
-                //show_toast(res.data.status, res.data.msg);
                 clear();
                 fetchEvent();
+                toast[res.data.status](res.data.msg);
+            })
+            .catch(err => {
+                err.handleGlobally && err.handleGlobally();
+                fetchEvent();
+            })
+    }
+    const fetchEvent = () => {
+        loading.value = true;
+        axios.get('event', {
+            params: {
+                filter: filter.value,
+                keyword: keyword.value,
+            }
+        })
+            .then(res => {
+                loading.value = false;
+                events.value = res.data || [];
+            })
+            .catch(err => {
+                loading.value = false;
+                err.handleGlobally && err.handleGlobally();
+            })
+    }
+    const editEvent = (id) => {
+        axios
+            .get('event/' + id)
+            .then(res => {
+                editId.value = res.data.id;
+                title.value = res.data.title;
+                description.value = res.data.description;
+                start_date.value = res.data.start_date;
+                end_date.value = res.data.end_date;
+            })
+            .catch(err => {
+                err.handleGlobally && err.handleGlobally();
+            })
+    }
+    const deleteEvent = (id) => {
+        if (!confirm("Are you sure want to delete ?")) {
+            return;
+        }
+        axios.delete('event/' + id)
+            .then(res => {
+                fetchEvent();
+                toast[res.data.status](res.data.msg);
+
             })
             .catch(err => {
                 err.handleGlobally && err.handleGlobally();

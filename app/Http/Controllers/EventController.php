@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helper\FileHandler;
-use App\Http\Resources\ApiResource;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,9 +12,9 @@ class EventController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return ApiResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(): ApiResource
+    public function index()
     {
         //query parameter
         $filter = request()->filter;
@@ -33,7 +32,7 @@ class EventController extends Controller
             ->get();
 
         //return events
-        return new ApiResource($events);
+        return response()->json($events);
     }
 
 
@@ -41,16 +40,16 @@ class EventController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @return ApiResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request): ApiResource
+    public function store(Request $request)
     {
         //Validating the Request
         $request->validate([
             'title' => 'required',
             'description' => 'required',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
             'image' => 'required|image|max:2048',
         ]);
 
@@ -60,7 +59,7 @@ class EventController extends Controller
 
         if (!$uploadedPath) {
             //File couldn't upload
-            return new ApiResource(['status' => 'error', 'msg' => 'Something went wrong!']);
+            return response()->json(['status' => 'error', 'msg' => 'Something went wrong!']);
         }
 
         //New Event creation
@@ -73,19 +72,18 @@ class EventController extends Controller
         ]);
 
         //Event created successfully :)
-        return new ApiResource(['status' => 'success', 'msg' => $event->title . ' added successfully']);
+        return response()->json(['status' => 'success', 'msg' => $event->title . ' added successfully']);
     }
 
     /**
      * Display the specified resource.
      *
      * @param $id
-     * @return ApiResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id): ApiResource
+    public function show($id)
     {
-        $event = Event::findOrFail($id);
-        return new ApiResource($event);
+        return $event = Event::findOrFail($id);
     }
 
     /**
@@ -93,9 +91,9 @@ class EventController extends Controller
      *
      * @param Request $request
      * @param $id
-     * @return ApiResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id): ApiResource
+    public function update(Request $request, $id)
     {
         $request->validate([
             'image' => 'nullable|image|max:2048',
@@ -117,20 +115,20 @@ class EventController extends Controller
                 $event->update(['image' => $uploadedPath]);
             }
         }
-        return new ApiResource(['status' => 'success', 'msg' => $event->title . ' updated successfully']);
+        return response()->json(['status' => 'success', 'msg' => $event->title . ' updated successfully']);
     }
 
     /**
      * Remove the specified resource from storage.
      *
      * @param $id
-     * @return ApiResource
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id): ApiResource
+    public function destroy($id)
     {
         $event = Event::findOrFail($id);
         $event->deleted_at = now();
         $event->save();
-        return new ApiResource(['status' => 'success', 'msg' => $event->title . ' deleted successfully']);
+        return response()->json(['status' => 'success', 'msg' => $event->title . ' deleted successfully']);
     }
 }
