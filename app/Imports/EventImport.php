@@ -3,36 +3,48 @@
 namespace App\Imports;
 
 use App\Models\Event;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class EventImport implements ToModel, WithValidation, WithHeadingRow
+class EventImport implements ToCollection, WithHeadingRow, WithValidation
 {
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
-    {
-        return new Event([
-            'title' => $row['title'],
-            'description' => $row['description'],
-            'start_date' => $row['start_date'],
-            'end_date' => $row['end_date'],
-            'image' => $row['image_path']
-        ]);
-    }
+
+    private int $rowCount = 0;
 
     public function rules(): array
     {
         return [
             '*.title' => 'required',
             '*.description' => 'required',
-            '*.start_date' => 'required|date',
-            '*.end_date' => 'required|date',
+            '*.start_date' => 'required',
+            '*.end_date' => 'required',
             '*.image' => 'required',
         ];
+    }
+
+    public function collection(Collection $collection): void
+    {
+        $rows = $collection->toArray();
+        $rows = json_decode(json_encode($rows));
+
+        foreach ($rows as $index => $row) {
+            $event = Event::create([
+                'title' => $row->title,
+                'description' => $row->description,
+                'start_date' => $row->start_date,
+                'end_date' => $row->end_date,
+                'image' => $row->image
+            ]);
+            if ($event) {
+                $this->rowCount++;
+            }
+        }
+    }
+
+    public function getRowCount(): int
+    {
+        return $this->rowCount;
     }
 }

@@ -14,5 +14,8 @@ use App\Http\Controllers\EventController;
 |
 */
 
-//Event BREAD
+// Excel File
+Route::post('event/bulk-upload', [EventController::class, 'storeBulkData']);
+
+// Event BREAD
 Route::resource('event', EventController::class)->only(['index', 'store', 'show', 'update', 'destroy']);

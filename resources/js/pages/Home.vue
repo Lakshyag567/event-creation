@@ -230,7 +230,6 @@
             })
             .catch(err => {
                 err.handleGlobally && err.handleGlobally();
-                fetchEvent();
             })
     }
     const fetchEvent = () => {
