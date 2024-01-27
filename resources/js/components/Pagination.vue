@@ -14,7 +14,7 @@
                 <unicon name="arrow-left" class="text-xl gray text-center h-6 w-6"></unicon>
             </button>
 
-            <!-- Page Links 1,2,3  -->
+            <!-- Page Links 1,2,3 .... 10 -->
             <template v-if="pagination.links">
                 <template v-for="(link,index) in pagination.links">
                     <button class="active-link" aria-current="page" v-if="link.active">
@@ -34,7 +34,7 @@
     </div>
 </template>
 <script setup>
-    import {computed, ref, watch} from 'vue'
+    import {computed} from 'vue'
 
     const props = defineProps({
         pagination: {type: Object, required: true},

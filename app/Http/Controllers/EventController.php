@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helper\FileHandler;
+use App\Http\Requests\EventRequest;
 use App\Imports\EventImport;
 use App\Models\Event;
 use Illuminate\Http\Request;
@@ -22,10 +23,6 @@ class EventController extends Controller
         $filter = request()->filter;  //event filter
         $keyword = request()->keyword; //search
         $rows = request()->rows ?? 25; //pagination
-
-        if ($rows == 'all') {
-            $rows = HomeSlider::count();
-        }
 
         // query builder
         $events = Event::filterEvent($filter)
@@ -49,17 +46,8 @@ class EventController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(EventRequest $request)
     {
-        // Validating the Request
-        $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'image' => 'required|image|max:2048',
-        ]);
-
         // Handle file uploading
         $imageFile = $request->file('image');
         $uploadedPath = FileHandler::upload($imageFile, 'event_images');
@@ -83,56 +71,6 @@ class EventController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function storeBulkData(Request $request)
-    {
-        // Validating the Request
-        $request->validate([
-            'file' => 'required|mimes:csv,xlsx,xls|max:20000',
-        ]);
-
-        try {
-            $import = new EventImport;
-            Excel::import($import, request()->file('file')); //Excel file import starts
-
-            $importedRows = $import->getRowCount(); // Get the count of successfully imported rows
-
-            $response = [
-                'status' => 'success',
-                'msg' => 'File uploaded successfully',
-                'data' => "<strong style='color: green;'>" . $importedRows . "</strong> Rows added",
-            ];
-
-        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            //Error Handling
-            $failures = $e->failures();
-            $all_errors = $e->errors();
-            $errormessage = '';
-
-            //Get the row positionig and error
-            foreach ($failures as $failure) {
-                $err = implode('', $failure->errors());
-                $errormessage .= " At Row <strong>" . ($failure->row() + 1) . "</strong>, ";
-                $errormessage .= "<span style='color: red'>" . $err . "</span>";
-                $errormessage .= " where values are " . json_encode(array_values($failure->values()));
-                $errormessage .= "<br>\n";
-            }
-
-            $response = [
-                'status' => 'error',
-                'msg' => 'Some Error Occurred',
-                'data' => $errormessage,
-            ];
-        }
-
-        return response()->json($response);
-    }
-
-    /**
      * Display the specified resource.
      *
      * @param $id
@@ -150,16 +88,8 @@ class EventController extends Controller
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(EventRequest $request, $id)
     {
-        $request->validate([
-            'title' => 'required',
-            'description' => 'required',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'image' => 'nullable|image|max:2048',
-        ]);
-
         $event = Event::findOrFail($id);
         $event->update($request->except('image'));
 
@@ -188,8 +118,7 @@ class EventController extends Controller
     public function destroy($id)
     {
         $event = Event::findOrFail($id);
-        $event->deleted_at = now(); //softly deleting
-        $event->save();
+        $event->delete(); //softly deleting
         return response()->json(['status' => 'success', 'msg' => $event->title . ' deleted successfully']);
     }
 }

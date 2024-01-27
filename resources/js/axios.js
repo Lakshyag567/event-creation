@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {useToast} from 'vue-toast-notification';
+
 const toast = useToast();
 
 const errorComposer = (err) => {
@@ -14,10 +15,10 @@ const errorComposer = (err) => {
                 errorMsg += `<li>${errors[key][0]}</li>`
             })
             errorMsg += `</ul>`
-            toast.error(errorMsg);
+            toast.error(errorMsg); //multiple errors
 
         } else if (message) {
-            toast.error(message); //basic error msg
+            toast.error(message); //single error msg
         } else {
             toast.error(err.toString()) //req. failed msg
         }

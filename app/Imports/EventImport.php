@@ -31,7 +31,6 @@ class EventImport implements ToCollection, WithHeadingRow, WithValidation
         $rows = json_decode(json_encode($rows));
 
         foreach ($rows as $index => $row) {
-            // dd(date('Y-m-d', strtotime($row->start_date)));
             $event = Event::create([
                 'title' => $row->title,
                 'description' => $row->description,

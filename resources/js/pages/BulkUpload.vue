@@ -20,12 +20,12 @@
                     <div class="flex flex-col md:flex-row gap-4 my-2 py-1">
                         <div class="w-full">
                             <label for="file" class="block mb-2 text-sm font-bold text-gray-900">Excel File <span class="text-red-600">*</span></label>
-                            <input type="file" @change="handleFileChange($event)" id="file" class="form-input" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                            <input type="file" @change="handleFileChange($event)" id="file" class="form-input" accept=".csv,.xls,.xlsx" required>
                         </div>
                     </div>
                     <div class="w-full">
                         <button type="submit" class="submit-btn" :disabled="uploading">
-                            {{ (progress > 0) ? progress : '' }}
+                            {{ progress ? progress : '' }}
                             {{ uploading ? 'Uploading...' : 'Upload' }}
                         </button>
                     </div>
@@ -69,13 +69,14 @@
     const uploadFile = () => {
         if (!file.value) return;
 
+        //uploading progress
         const config = {
             onUploadProgress: (progressEvent) => {
                 const {loaded, total} = progressEvent;
                 let percent = Math.floor((loaded * 100) / total)
 
                 if (percent <= 100) {
-                    progress.value = percent + '%' // hook to set the value of current level that needs to be passed to the progressbar
+                    progress.value = percent + '%'
                 }
             },
         }
@@ -84,10 +85,12 @@
 
         uploading.value = true;
         responseData.value = '';
+
         axios.post('/event/bulk-upload', formData, config)
             .then(res => {
                 toast[res.data.status](res.data.msg);
                 uploading.value = false;
+                progress.value = '';
                 responseData.value = (res.data.data);
             })
             .catch(err => {

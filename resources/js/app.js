@@ -1,6 +1,8 @@
 import {createApp} from 'vue';
 import "./axios.js";
 import Unicon from 'vue-unicons'
+import Pusher from 'pusher-js';
+import config from './config.js';
 import 'vue-toast-notification/dist/theme-sugar.css';
 import router from "./router.js";
 import Main from './layouts/Main.vue';
@@ -23,5 +25,11 @@ app.component("ImageModal", ImageModal);
 app.mixin(DateMixin)
 app.use(Unicon)
 app.use(router);
+
+//Pusher Config
+window.Pusher = new Pusher(config.PUSHER_APP_KEY, {
+    cluster: config.PUSHER_APP_CLUSTER,
+    encrypted: true
+});
 
 app.mount('#app');

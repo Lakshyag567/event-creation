@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\ExcelUploadController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,6 @@ use App\Http\Controllers\EventController;
 */
 
 // Excel File
-Route::post('event/bulk-upload', [EventController::class, 'storeBulkData']);
-
+Route::post('event/bulk-upload', [ExcelUploadController::class, 'upload']);
 // Event BREAD
 Route::resource('event', EventController::class)->only(['index', 'store', 'show', 'update', 'destroy']);

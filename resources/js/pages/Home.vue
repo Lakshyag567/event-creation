@@ -148,7 +148,6 @@
                             </div>
                         </div>
                         <div class="flex items-center justify-between py-4">
-
                             <Pagination :pagination="pagination" :fetchNewData="fetchEvent"/>
                         </div>
                     </div>
@@ -275,7 +274,6 @@
                 err.handleGlobally && err.handleGlobally();
             })
     }
-
     /* Fetch the particular event by <id> to edit */
     const editEvent = (id) => {
         axios
