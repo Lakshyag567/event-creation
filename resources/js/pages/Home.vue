@@ -84,14 +84,17 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex border border-gray-600 rounded-lg bg-white ml-2">
-                            <select class="!w-14 !h-auto filter-dropdown !appearance-auto" @change="fetchEvent()" v-model="rows">
-                                <option value="25" class="bg-white">25</option>
+                        <div class="relative flex border border-gray-600 rounded-lg bg-white ml-2">
+                            <select class="!w-16 !h-auto filter-dropdown" style="appearance: unset;" @change="fetchEvent()" v-model="rows">
+                                <option value="25" class="bg-white" selected>25</option>
                                 <option value="50" class="bg-white">50</option>
                                 <option value="100" class="bg-white">100</option>
                                 <option value="250" class="bg-white">250</option>
                                 <option value="500" class="bg-white">500</option>
                             </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <unicon name="angle-down" class=""></unicon>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -182,7 +185,7 @@
     //filters
     const keyword = ref('');
     const filter = ref('');
-    const rows = ref(25);
+    const rows = ref('25');
     //Image modal
     const showModal = ref(false);
     const imgModal = ref('');
