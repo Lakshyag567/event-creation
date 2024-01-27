@@ -25,6 +25,7 @@
                     </div>
                     <div class="w-full">
                         <button type="submit" class="submit-btn" :disabled="uploading">
+                            {{ (progress > 0) ? progress : '' }}
                             {{ uploading ? 'Uploading...' : 'Upload' }}
                         </button>
                     </div>
@@ -48,6 +49,7 @@
     const file = ref('');
     const toast = useToast();
     const responseData = ref('');
+    const progress = ref('');
 
     const handleFileChange = (e) => {
         if (e?.target?.files.length > 0) {
@@ -67,11 +69,22 @@
     const uploadFile = () => {
         if (!file.value) return;
 
+        const config = {
+            onUploadProgress: (progressEvent) => {
+                const {loaded, total} = progressEvent;
+                let percent = Math.floor((loaded * 100) / total)
+
+                if (percent <= 100) {
+                    progress.value = percent + '%' // hook to set the value of current level that needs to be passed to the progressbar
+                }
+            },
+        }
         let formData = new FormData();
         formData.append('file', file.value);
 
         uploading.value = true;
-        axios.post('/event/bulk-upload', formData)
+        responseData.value = '';
+        axios.post('/event/bulk-upload', formData, config)
             .then(res => {
                 toast[res.data.status](res.data.msg);
                 uploading.value = false;

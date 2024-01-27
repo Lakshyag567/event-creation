@@ -26,7 +26,6 @@
 
     // Watch for changes in "show"
     watch(() => props.show, (newValue) => {
-        // Update the value in the "myShow"
         myShow.value = newValue;
     });
 </script>

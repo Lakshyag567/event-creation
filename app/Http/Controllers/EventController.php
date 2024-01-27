@@ -19,8 +19,13 @@ class EventController extends Controller
     public function index()
     {
         // query parameter
-        $filter = request()->filter;
-        $keyword = request()->keyword;
+        $filter = request()->filter;  //event filter
+        $keyword = request()->keyword; //search
+        $rows = request()->rows ?? 25; //pagination
+
+        if ($rows == 'all') {
+            $rows = HomeSlider::count();
+        }
 
         // query builder
         $events = Event::filterEvent($filter)
@@ -31,7 +36,7 @@ class EventController extends Controller
                 });
             })
             ->orderBy('start_date')
-            ->get();
+            ->paginate($rows);
 
         // return events
         return response()->json($events);
@@ -92,7 +97,7 @@ class EventController extends Controller
 
         try {
             $import = new EventImport;
-            $excel = Excel::import($import, request()->file('file'));
+            Excel::import($import, request()->file('file')); //Excel file import starts
 
             $importedRows = $import->getRowCount(); // Get the count of successfully imported rows
 
@@ -103,10 +108,12 @@ class EventController extends Controller
             ];
 
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            //Error Handling
             $failures = $e->failures();
             $all_errors = $e->errors();
             $errormessage = '';
 
+            //Get the row positionig and error
             foreach ($failures as $failure) {
                 $err = implode('', $failure->errors());
                 $errormessage .= " At Row <strong>" . ($failure->row() + 1) . "</strong>, ";
@@ -181,7 +188,7 @@ class EventController extends Controller
     public function destroy($id)
     {
         $event = Event::findOrFail($id);
-        $event->deleted_at = now();
+        $event->deleted_at = now(); //softly deleting
         $event->save();
         return response()->json(['status' => 'success', 'msg' => $event->title . ' deleted successfully']);
     }

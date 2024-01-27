@@ -12,9 +12,8 @@ import ImageModal from "@/components/ImageModal.vue";
 const app = createApp(Main);
 
 //Icons
-import {uniUpload, uniCalendarAlt, uniEdit, uniTrashAlt, uniTimes, uniSearch, uniAngleDown, uniArrowLeft, uniSync} from 'vue-unicons/dist/icons'
-
-Unicon.add([uniUpload, uniCalendarAlt, uniEdit, uniTrashAlt, uniTimes, uniSearch, uniAngleDown, uniArrowLeft, uniSync])
+import {uniUpload, uniCalendarAlt, uniEdit, uniTrashAlt, uniTimes, uniSearch, uniAngleDown, uniArrowLeft, uniArrowRight, uniSync} from 'vue-unicons/dist/icons'
+Unicon.add([uniUpload, uniCalendarAlt, uniEdit, uniTrashAlt, uniTimes, uniSearch, uniAngleDown, uniArrowLeft, uniArrowRight, uniSync])
 
 //Common Components
 app.component("Topbar", TopBar);

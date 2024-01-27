@@ -66,21 +66,32 @@
                         </div>
                         <input type="text" v-model="keyword" title="Search" class="search" placeholder="Search" @keydown.enter="fetchEvent()">
                     </div>
-                    <div class="flex border border-gray-600 rounded-lg bg-white">
-                        <button class="px-2 py-1 m-[2px] hover:bg-gray-100 border-r border-solid cursor-pointer" @click="fetchEvent()">
-                            <unicon name="sync" class=""></unicon>
-                        </button>
-                        <div class="relative flex items-center">
-                            <select title="Filter" v-model="filter" @change="fetchEvent()" class="filter-dropdown">
-                                <option class="bg-gray-100" value="">All Events</option>
-                                <option class="bg-gray-100" value="FINISHED">Finished Events</option>
-                                <option class="bg-gray-100" value="UPCOMING">Upcoming Events</option>
-                                <option class="bg-gray-100" value="UPCOMING7">Upcoming in 7 days</option>
-                                <option class="bg-gray-100" value="FINISHED7">Finished in last 7 days</option>
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <unicon name="angle-down" class=""></unicon>
+                    <div class="flex">
+                        <div class="flex border border-gray-600 rounded-lg bg-white">
+                            <button class="px-2 pt-1 m-[2px] hover:bg-gray-100 border-r border-solid cursor-pointer" @click="fetchEvent()">
+                                <unicon name="sync" class=""></unicon>
+                            </button>
+                            <div class="relative flex items-center">
+                                <select title="Filter" v-model="filter" @change="fetchEvent()" class="filter-dropdown">
+                                    <option class="bg-gray-100" value="">All Events</option>
+                                    <option class="bg-gray-100" value="FINISHED">Finished Events</option>
+                                    <option class="bg-gray-100" value="UPCOMING">Upcoming Events</option>
+                                    <option class="bg-gray-100" value="UPCOMING7">Upcoming in 7 days</option>
+                                    <option class="bg-gray-100" value="FINISHED7">Finished in last 7 days</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <unicon name="angle-down" class=""></unicon>
+                                </div>
                             </div>
+                        </div>
+                        <div class="flex border border-gray-600 rounded-lg bg-white ml-2">
+                            <select class="!w-14 !h-auto filter-dropdown !appearance-auto" @change="fetchEvent()" v-model="rows">
+                                <option value="25" class="bg-white">25</option>
+                                <option value="50" class="bg-white">50</option>
+                                <option value="100" class="bg-white">100</option>
+                                <option value="250" class="bg-white">250</option>
+                                <option value="500" class="bg-white">500</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -102,7 +113,7 @@
                             </div>
                             <div v-for="(event, index) in events" v-bind:key="event.id" class="table-row table-body hover:bg-primary-100" :class="{ 'bg-primary-200': event.id === editId }">
                                 <div class="table-cell border-t border-gray-500 text-sm text-center w-10 p-1">
-                                    {{ index + 1 }}
+                                    {{ pagination.from + index }}
                                 </div>
                                 <div class="table-cell border-t border-l border-gray-500 text-sm p-1 text-center !align-middle">
                                     <img class="w-20 h-20 border border-gray-400 mx-auto p-1 cursor-pointer rounded-[50%]"
@@ -136,6 +147,10 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="flex items-center justify-between py-4">
+
+                            <Pagination :pagination="pagination" :fetchNewData="fetchEvent"/>
+                        </div>
                     </div>
                 </template>
                 <template v-else>
@@ -152,11 +167,13 @@
 <script setup>
     import {ref, defineComponent, onMounted} from 'vue';
     import {useToast} from 'vue-toast-notification';
+    import Pagination from "@/components/Pagination.vue";
 
     const storage_url = window.location.origin + "/storage/"
     const loading = ref(true);
     const editId = ref('');
     const events = ref([]);
+    const pagination = ref({});
     //form-fields
     const title = ref('');
     const description = ref('');
@@ -166,6 +183,7 @@
     //filters
     const keyword = ref('');
     const filter = ref('');
+    const rows = ref(25);
     //Image modal
     const showModal = ref(false);
     const imgModal = ref('');
@@ -203,8 +221,9 @@
     }
 
 
+    /*Creating new event and edit event */
     const createOrEditEvent = () => {
-        let url = 'event';
+        let url = '/event';
         let formData = new FormData();
         //Basic fields
         formData.append('title', title.value);
@@ -224,31 +243,40 @@
         }
         axios.post(url, formData)
             .then(res => {
-                clear();
-                fetchEvent();
-                toast[res.data.status](res.data.msg);
+                clear(); //clear the form fields
+                fetchEvent(); //fetching events with new data
+                toast[res.data.status](res.data.msg); //display success toast msg
             })
             .catch(err => {
                 err.handleGlobally && err.handleGlobally();
             })
     }
-    const fetchEvent = () => {
+    const fetchEvent = (url = 'event') => {
         loading.value = true;
-        axios.get('event', {
+        axios.get(url, {
             params: {
                 filter: filter.value,
                 keyword: keyword.value,
+                rows: rows.value,
             }
         })
             .then(res => {
                 loading.value = false;
-                events.value = res.data || [];
+                let {data, ...paginate} = res.data;
+                //updating the "events" ref
+                events.value = data || [];
+                //Handling pagination links data
+                paginate.links.pop();
+                paginate.links.shift();
+                pagination.value = paginate;
             })
             .catch(err => {
                 loading.value = false;
                 err.handleGlobally && err.handleGlobally();
             })
     }
+
+    /* Fetch the particular event by <id> to edit */
     const editEvent = (id) => {
         axios
             .get('event/' + id)
@@ -258,20 +286,22 @@
                 description.value = res.data.description;
                 start_date.value = res.data.start_date;
                 end_date.value = res.data.end_date;
+                //scroll top for edit the form
+                document.body.scrollTop = document.documentElement.scrollTop = 0;
             })
             .catch(err => {
                 err.handleGlobally && err.handleGlobally();
             })
     }
+    /* Deleting the particular event */
     const deleteEvent = (id) => {
         if (!confirm("Are you sure want to delete ?")) {
             return;
         }
         axios.delete('event/' + id)
             .then(res => {
-                fetchEvent();
-                toast[res.data.status](res.data.msg);
-
+                fetchEvent(); //fetching events after deletion
+                toast[res.data.status](res.data.msg); //display success toast msg
             })
             .catch(err => {
                 err.handleGlobally && err.handleGlobally();
@@ -279,6 +309,7 @@
             })
     }
 
+    //Fetch data when component mounts
     onMounted(() => {
         fetchEvent();
     });
