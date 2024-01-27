@@ -64,7 +64,7 @@
                         <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none" v-else>
                             <unicon name="search" class=""></unicon>
                         </div>
-                        <input type="text" v-model="keyword" title="Search" class="search" placeholder="Search" @keydown.enter="fetchEvent()">
+                        <input type="text" v-model="keyword" title="Search" class="search" placeholder="Search" @change="fetchEvent()">
                     </div>
                     <div class="flex">
                         <div class="flex border border-gray-600 rounded-lg bg-white">
@@ -167,7 +167,7 @@
 </template>
 
 <script setup>
-    import {ref, defineComponent, onMounted} from 'vue';
+    import {ref, defineComponent, onMounted, watch} from 'vue';
     import {useToast} from 'vue-toast-notification';
     import Pagination from "@/components/Pagination.vue";
 
@@ -191,6 +191,11 @@
     const imgModal = ref('');
     //Toast
     const toast = useToast();
+
+    /* Watcher on search */
+    watch(keyword, () => {
+        fetchEvent();
+    })
 
     /* Methods */
     const openImageModal = (img) => {
